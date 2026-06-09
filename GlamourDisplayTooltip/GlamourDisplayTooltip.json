@@ -1,0 +1,13 @@
+{
+  "Author": "ImperfectRain",
+  "Name": "Glamour Display Tooltip",
+  "Punchline": "A small visual preview next to item tooltips.",
+  "Description": "Hold a modifier while hovering a gear tooltip to show a separate preview panel. It can use item icons, cached Eorzea Collection images, or the game's native Try On render target. EC lookup is still being tuned, so the plugin includes a debug report window for bad matches.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "glamour",
+    "tooltip",
+    "gear",
+    "preview"
+  ]
+}

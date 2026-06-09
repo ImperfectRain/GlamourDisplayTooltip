@@ -1,78 +1,64 @@
-> ⚠️ **Don't click Fork!**
-> 
-> This is a GitHub Template repo. If you want to use this for a plugin, [use this template][new-repo] to make a new repo!
->
-> ![image](https://github.com/goatcorp/SamplePlugin/assets/16760685/d9732094-e1ed-4769-a70b-58ed2b92580c)
+# Glamour Display Tooltip
 
-# SamplePlugin
+Tiny Dalamud experiment for people who keep hovering gear and thinking, "yeah, but what does it look like?"
 
-[![Use This Template badge](https://img.shields.io/badge/Use%20This%20Template-0?logo=github&labelColor=grey)][new-repo]
+Hold the configured modifier while an item tooltip is open and the plugin shows a separate preview panel beside it. Right now it can use:
 
+- the game's item icon as a dependable fallback
+- Eorzea Collection images when they have been cached or found
+- the game's native Try On render target for a more direct in-game preview
 
-Simple example plugin for Dalamud.
+This is still early and a bit scrappy in the honest way. The hard part is not drawing the window, it is reliably mapping XIV item names to Eorzea Collection's gearset images without a nice public API. The plugin has a debug window for that reason.
 
-This is not designed to be the simplest possible example, but it is also not designed to cover everything you might want to do. For more detailed questions, come ask in [the Discord](https://discord.gg/holdshift).
+## Commands
 
-## Main Points
+- `/gdt` opens the main preview window
+- `/gdt config` opens settings
 
-* Simple functional plugin
-  * Slash command
-  * Main UI
-  * Settings UI
-  * Image loading
-  * Plugin json
-* Simple, slightly-improved plugin configuration handling
-* Project organization
-  * Copies all necessary plugin files to the output directory
-    * Does not copy dependencies that are provided by dalamud
-    * Output directory can be zipped directly and have exactly what is required
-  * Hides data files from visual studio to reduce clutter
-    * Also allows having data files in different paths than VS would usually allow if done in the IDE directly
+## Settings
 
+The settings window lets you pick the preview source, preview size, and activation key. The default virtual key is `16`, which treats Shift, Ctrl, or Alt as the modifier.
 
-The intention is less that any of this is used directly in other projects, and more to show how similar things can be done.
+There are also helper buttons for:
 
-## How To Use
+- downloading/caching Eorzea Collection images
+- watching the EC download progress
+- copying a debug report for a broken item lookup
 
-### Getting Started
+## Eorzea Collection Notes
 
-To begin, [clone this template repository][new-repo] to your own GitHub account. This will automatically bring in everything you need to get a jumpstart on development. You do not need to fork this repository unless you intend to contribute modifications to it.
+EC images are best effort. The plugin tries to build an index from Eorzea Collection gearset pages, then uses the real CDN paths from that index rather than blindly guessing folders. If an item still fails:
 
-Be sure to also check out the [Dalamud Developer Docs][dalamud-docs] for helpful information about building your own plugin. The Developer Docs includes helpful information about all sorts of things, including [how to submit][submit] your newly-created plugin to the official repository. Assuming you use this template repository, the provided project build configuration and license are already chosen to make everything a breeze.
+1. Hover the item.
+2. Open `Debug output`.
+3. Press `Refresh`.
+4. Press `Copy`.
+5. Paste the report into the issue/conversation.
 
-[new-repo]: https://github.com/new?template_name=SamplePlugin&template_owner=goatcorp
-[dalamud-docs]: https://dalamud.dev
-[submit]: https://dalamud.dev/plugin-publishing/submission
+That report includes the item row, slot data, normalized EC names, slug candidates, cache paths, indexed gearset matches, and fallback CDN candidates.
 
-### Prerequisites
+## Building
 
-SamplePlugin assumes all the following prerequisites are met:
+Requirements are the usual Dalamud plugin basics:
 
-* XIVLauncher, FINAL FANTASY XIV, and Dalamud have all been installed and the game has been run with Dalamud at least once.
-* XIVLauncher is installed to its default directories and configurations.
-  * If a custom path is required for Dalamud's dev directory, it must be set with the `DALAMUD_HOME` environment variable.
-* A .NET Core 8 SDK has been installed and configured, or is otherwise available. (In most cases, the IDE will take care of this.)
+- XIVLauncher and Dalamud installed
+- Dalamud dev files available through XIVLauncher
+- .NET SDK compatible with `Dalamud.NET.Sdk/15.0.0`
 
-### Building
+Build with:
 
-1. Open up `SamplePlugin.sln` in your C# editor of choice (likely [Visual Studio](https://visualstudio.microsoft.com) or [JetBrains Rider](https://www.jetbrains.com/rider/)).
-2. Build the solution. By default, this will build a `Debug` build, but you can switch to `Release` in your IDE.
-3. The resulting plugin can be found at `SamplePlugin/bin/x64/Debug/SamplePlugin.dll` (or `Release` if appropriate.)
+```powershell
+dotnet build -p:Platform=x64
+```
 
-### Activating in-game
+The dev DLL will be at:
 
-1. Launch the game and use `/xlsettings` in chat or `xlsettings` in the Dalamud Console to open up the Dalamud settings.
-    * In here, go to `Experimental`, and add the full path to the `SamplePlugin.dll` to the list of Dev Plugin Locations.
-2. Next, use `/xlplugins` (chat) or `xlplugins` (console) to open up the Plugin Installer.
-    * In here, go to `Dev Tools > Installed Dev Plugins`, and the `SamplePlugin` should be visible. Enable it.
-3. You should now be able to use `/pmycommand` (chat) or `pmycommand` (console)!
+```text
+GlamourDisplayTooltip/bin/x64/Debug/GlamourDisplayTooltip.dll
+```
 
-Note that you only need to add it to the Dev Plugin Locations once (Step 1); it is preserved afterwards. You can disable, enable, or load your plugin on startup through the Plugin Installer.
+Add that DLL to Dalamud's dev plugin locations, then enable it from the plugin installer dev tools.
 
-### Reconfiguring for your own uses
+## Status
 
-Replace all references to `SamplePlugin` in all the files and filenames with your desired name, then start building the plugin of your dreams. You'll figure it out 😁
-
-Dalamud will load the JSON file (by default, `SamplePlugin/SamplePlugin.json`) next to your DLL and use it for metadata, including the description for your plugin in the Plugin Installer. Make sure to update this with information relevant to _your_ plugin!
-
-All participation in this repository is governed by our [Code of Conduct](https://dalamud.dev/code-of-conduct). If you used AI tooling at any point, review the [AI Usage Policy](https://dalamud.dev/plugin-publishing/ai-policy) and disclose your level of AI use. Entirely AI-generated submissions will be rejected, and undisclosed AI use may result in a ban.
+The plugin is usable, but not polished. EC image lookup and bulk caching are the main moving parts that still need real-world reports. Native Try On preview is intentionally using the game's own render target instead of a custom model renderer, because the custom route got messy fast and was not worth pretending otherwise.
